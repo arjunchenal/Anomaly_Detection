@@ -49,8 +49,8 @@ pip install tensorflow numpy pandas scikit-learn matplotlib
 1. **Clone the Repository**:
 
    ```bash
-   git clone <repository-url>
-   cd <repository-directory>
+   git clone https://github.com/arjuncee123/Anomaly_Detection.git
+   cd Anomaly_Detection
    ```
 
 2. **Prepare Data**:
