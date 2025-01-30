@@ -41,6 +41,8 @@ pip install tensorflow numpy pandas scikit-learn matplotlib
 ## File Structure
 
 - **LSTM_Model.ipynb**: Jupyter Notebook file containing the full implementation of the LSTM anomaly detection model.
+- **lstm.py**: Contains the function which is used for merging detected sequences and comparing with ground truth data.
+- **utils.py**: Contains helper functions for LSTM_Model.ipynb.
 
 ---
 
