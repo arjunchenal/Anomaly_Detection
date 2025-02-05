@@ -1,4 +1,4 @@
-# Anomaly_Detection
+# Anomaly_Detection 
 
 # LSTM Time Series Anomaly Detection
 
@@ -29,7 +29,7 @@ Make sure the following libraries are installed in your environment:
 - Scikit-learn
 - Matplotlib
 
-Install the required packages using the below command:
+Install the required packages using below command:
 
 ```bash
 pip install tensorflow numpy pandas scikit-learn matplotlib
