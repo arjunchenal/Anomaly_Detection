@@ -1,5 +1,5 @@
-# Anomaly Detection using Clustering methods, LSTM & GRU for time series data.
+# Anomaly Detection using statistical and deep learning techniques
 
-This repository provides comprehensive implementation for anomaly detection in the time series data using Clustering methods and LSTM, GRU.
+This repository provides comprehensive implementation for anomaly detection in the time series data using both statistical and deep learning techniques.
 
 ---
