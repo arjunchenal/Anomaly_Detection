@@ -1,1 +1,5 @@
-/trace_data/
+lstm_gru/trace_data/
+clustering_methods/trace_data/
+clustering_methods/train_data_processed
+clustering_methods/test_data_processed
+clustering_methods/clustered_features_seglearn.csv
