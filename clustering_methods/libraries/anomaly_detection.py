@@ -104,8 +104,12 @@ def test_single_for_clustering(file_path, sequence_length,trained_features, trai
 
     # Feature extraction for test data
     X_test_df = extract_features_seglearn(X_test)
-    X_test_scaled = scaler.transform(X_test_df)        
+    X_test_df_clean = X_test_df.dropna().reset_index(drop=True)
+
+    X_test_scaled = scaler.transform(X_test_df_clean)        
+
     inference_time = 0
+
     anomalies_pred = []
     for i, X_test_sample in enumerate(X_test_scaled):
         X_test_sample = X_test_sample.reshape(1,-1)
