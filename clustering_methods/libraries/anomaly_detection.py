@@ -5,7 +5,9 @@ import numpy as np
 from collections import defaultdict
 import time
 from sklearn.preprocessing import MinMaxScaler
-
+from sklearn.neighbors import NearestNeighbors
+from seglearn.feature_functions import all_features
+from seglearn.transform import FeatureRep
 
 # Read trace files and extracts event data
 # Paramters : trace_path (str) path to trace file
@@ -23,6 +25,114 @@ def load_data(file_paths):
         if isinstance(traces, list):
             data.append(traces)
     return data
+
+
+
+def detect_anomalies_knn(test_data_scaled, train_data, train_clusters, k):
+    knn = NearestNeighbors(n_neighbors=k)
+    knn.fit(train_data)
+
+    distance, i = knn.kneighbors(test_data_scaled)
+
+    neighbor_clusters = train_clusters[i[0]]
+    unique_cluster = np.unique(neighbor_clusters)
+
+    if len(unique_cluster) != 1:
+        return [0]
+    else:
+        return []
+    
+
+def extract_features_seglearn(traces):
+    feature_vectors = []
+    funcs = all_features()
+    if 'hist4' in funcs:
+        del funcs['hist4']
+    feature_names = list(funcs.keys())
+
+
+    for i,trace in enumerate(traces):
+        event_ids = np.array(trace[0]).reshape(1,-1,1)
+        timestamp_diffs = np.array(trace[1]).reshape(1,-1,1)
+
+        feat_all = []
+        for name in feature_names:
+            func = funcs[name]
+            feat_event = func(event_ids)
+            feat_time = func(timestamp_diffs)
+            feat_all.extend(np.array(feat_event).reshape(-1,))
+            feat_all.extend(np.array(feat_time).reshape(-1,))
+
+        
+        feature_vectors.append(feat_all)
+
+    final_feature_names = []
+    for name in feature_names:
+        final_feature_names.append(f"{name}_event")
+        final_feature_names.append(f"{name}_time")
+    print("final_feature_names",len(final_feature_names))
+
+    return pd.DataFrame(feature_vectors, columns=final_feature_names)
+
+
+
+
+def test_single_for_clustering(file_path, sequence_length,trained_features, trained_cluster_labels,scaler):
+
+    anomalies = []
+
+    if file_path.find('.npy') != -1:
+        test_data = np.load(file_path)
+    else:
+        test_data = read_traces(file_path)
+
+    event_ids = [item[0] for item in test_data]
+    
+    timestamps = [item[1] for item in test_data]
+    timestamp_difference = np.diff(timestamps).tolist()
+    trimmed_event_ids = event_ids[1:]
+
+    total_length = len(trimmed_event_ids)
+
+    X_test = []
+    for i in range(0, total_length, sequence_length):
+        index_end = min(i + sequence_length, total_length)
+        event_id_seq_len = trimmed_event_ids[i:index_end]
+        timestamp_diff_seq_len = timestamp_difference[i:index_end]
+        X_test.append([event_id_seq_len, timestamp_diff_seq_len])
+
+
+    # Feature extraction for test data
+    X_test_df = extract_features_seglearn(X_test)
+    X_test_scaled = scaler.transform(X_test_df)        
+
+    anomalies_pred = []
+    for i, X_test_sample in enumerate(X_test_scaled):
+        X_test_sample = X_test_sample.reshape(1,-1)
+        result = detect_anomalies_knn(X_test_sample, trained_features, trained_cluster_labels, k=3)
+        if result:
+            anomalies_pred.append(i)
+
+
+    # Now we have got the index value in anomalies_pred. Using that we can fetch further details of anomalous data.
+    # Fetching event start and end index
+    anomaly_range = []
+    for i in anomalies_pred:
+        start_index = i * sequence_length
+        end_index = min((i+1) * sequence_length, total_length) - 1
+        anomaly_range.append((start_index, end_index))
+
+    # Now we need to get timestamp values
+    for start_index, end_index in anomaly_range:
+        start_timestamp = test_data[start_index + 1][1]
+        end_timestamp = test_data[end_index + 1][1]
+        anomalies.append([(start_index,end_index),
+                          (start_timestamp,end_timestamp),
+                          os.path.basename(file_path)
+
+        ])
+
+    return anomalies
 
 
 
