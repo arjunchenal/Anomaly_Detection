@@ -105,11 +105,14 @@ def test_single_for_clustering(file_path, sequence_length,trained_features, trai
     # Feature extraction for test data
     X_test_df = extract_features_seglearn(X_test)
     X_test_scaled = scaler.transform(X_test_df)        
-
+    inference_time = 0
     anomalies_pred = []
     for i, X_test_sample in enumerate(X_test_scaled):
         X_test_sample = X_test_sample.reshape(1,-1)
+        start_time = time.time()
         result = detect_anomalies_knn(X_test_sample, trained_features, trained_cluster_labels, k=3)
+        end_time = time.time()
+        inference_time = (end_time - start_time) * 1000 # inference time in ms
         if result:
             anomalies_pred.append(i)
 
@@ -132,7 +135,7 @@ def test_single_for_clustering(file_path, sequence_length,trained_features, trai
 
         ])
 
-    return anomalies
+    return anomalies, inference_time
 
 
 
